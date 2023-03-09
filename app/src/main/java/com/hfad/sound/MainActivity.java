@@ -5,29 +5,43 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.karlotoy.perfectune.instance.PerfectTune;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "TimerTask";
 
     TextView textView, cancel, start, timer;
     CountDownTimer cTimer = null;
     Handler handler = new Handler();
     boolean training_stop = false;
     int commandCount=0;
+    int count=0;
+    boolean flag=false;
     int[]  type2First,type2Second,type3First,type3Second,type4First,type4Second,type5First,
             type5Second,type6First,type6Second,specialType2First,specialType2Second;
+    long startTime ;
 
+    long endTime ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
 
+
+
         setContentView(R.layout.activity_main);
         PerfectTune perfectTune = new PerfectTune();
+
+
+
         perfectTune.setTuneFreq(1400);
         //      perfectTune.playTune();
         fillArray ();
@@ -52,9 +66,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-
+                    flag=true;
                   commandCount=0;
-                    startTimer(type5Second[commandCount],0 , perfectTune,type5Second);
+                  //  startTimer(type3First[commandCount],0 , perfectTune,type3First);
+                count=0;
+
+                playSound(perfectTune,type2First);
+
+
 
 
             }
@@ -95,8 +114,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void canselTimer(){
-        commandCount=-1;
-        cTimer.onFinish();
+        flag=false;
+       // cTimer.onFinish();
+    }
+
+    void playSound(PerfectTune perfectTune,int[] array){
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (commandCount%2==0)
+                perfectTune.playTune();
+                if (array[commandCount]/100==count) {
+                    perfectTune.stopTune();
+                    count=0;
+                    commandCount++;
+                }
+                if (flag==false||commandCount==array.length) {
+                    perfectTune.stopTune();
+                    t.cancel();
+                    t.purge();
+                    count=0;
+                    commandCount=0;
+                }
+                    count++;
+            }
+        },0,100);
     }
 
     void fillArray () {
@@ -106,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         specialType2First = new int[]{300,700,300,700,300,12000,1000};
         specialType2Second = new int[]{200,1000,200,1000,200,7000,1000};
 
-        type3First = new int[]{200};
+        type3First = new int[]{1000};
         type3Second = new int[]{200};
 
         type4First = new int[]{200, 100, 200};
